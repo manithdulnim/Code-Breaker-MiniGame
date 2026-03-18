@@ -1,25 +1,29 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js";
 import { getDatabase, ref, set, onValue, update, push, get } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
-// Your Firebase configuration
+// Your updated Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyD_g4WJdG_7BlTSJNlbvOgqD_q14zYMs7g",
-    authDomain: "tuition-earning-dashboard.firebaseapp.com",
-    projectId: "tuition-earning-dashboard",
-    storageBucket: "tuition-earning-dashboard.firebasestorage.app",
-    messagingSenderId: "670340026664",
-    appId: "1:670340026664:web:e82842267de137aa71401d",
-    measurementId: "G-RM0S7RVN26"
+    apiKey: "AIzaSyBYORqa8ncIZD8CuMniqqZM0EM9nEehTdA",
+    authDomain: "code-breaker-game.firebaseapp.com",
+    projectId: "code-breaker-game",
+    storageBucket: "code-breaker-game.firebasestorage.app",
+    messagingSenderId: "329226601075",
+    appId: "1:329226601075:web:75d1d809daf157800c6006",
+    measurementId: "G-YKJF2Z9BFM",
+    // Added based on your regional database location (Singapore)
+    databaseURL: "https://code-breaker-game-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 const db = getDatabase(app);
 
 let gameId = null;
-let playerRole = null; // 'creator' or 'joiner'
+let playerRole = null; 
 
-// --- Select UI Elements ---
+// --- UI Elements ---
 const btnCreate = document.getElementById('btn-create');
 const btnJoin = document.getElementById('btn-join');
 const btnSubmit = document.getElementById('btn-submit-guess');
@@ -31,7 +35,7 @@ const guessLog = document.getElementById('guess-log');
 // --- Event Listeners ---
 
 btnCreate.addEventListener('click', async () => {
-    console.log("Attempting to create game...");
+    console.log("Creating game...");
     gameId = Math.random().toString(36).substring(2, 7).toUpperCase();
     const secretCode = Math.floor(1000 + Math.random() * 9000).toString();
     
@@ -44,33 +48,31 @@ btnCreate.addEventListener('click', async () => {
         });
         playerRole = 'creator';
         startUI(gameId);
-        console.log("Game created! ID:", gameId);
     } catch (e) {
-        console.error("Create Error:", e);
-        alert("Firebase Connection Failed. Check Database Rules!");
+        console.error("Firebase Error:", e);
+        alert("Check your Firebase Rules! Set them to read/write: true.");
     }
 });
 
 btnJoin.addEventListener('click', async () => {
     const inputId = document.getElementById('join-id-input').value.toUpperCase();
-    if (!inputId) return alert("Please enter a Game ID");
+    if (!inputId) return alert("Enter a Game ID");
 
     gameId = inputId;
     try {
         await update(ref(db, 'games/' + gameId), { status: 'active' });
         playerRole = 'joiner';
         startUI(gameId);
-        console.log("Joined game:", gameId);
     } catch (e) {
         console.error("Join Error:", e);
-        alert("Game ID not found or Database Error.");
+        alert("Game not found.");
     }
 });
 
 btnSubmit.addEventListener('click', async () => {
     const guessInput = document.getElementById('player-guess');
     const guess = guessInput.value;
-    if (guess.length !== 4) return alert("Enter exactly 4 digits");
+    if (guess.length !== 4) return alert("Enter 4 digits");
 
     const snapshot = await get(ref(db, 'games/' + gameId));
     const data = snapshot.val();
@@ -81,10 +83,8 @@ btnSubmit.addEventListener('click', async () => {
     const nextTurn = playerRole === 'creator' ? 'joiner' : 'creator';
     const isWin = result === "4 Bulls, 0 Cows";
 
-    // Push guess to log
     await push(ref(db, 'games/' + gameId + '/guesses'), { val: guess, result: result });
     
-    // Update game state
     await update(ref(db, 'games/' + gameId), { 
         turn: nextTurn,
         status: isWin ? 'won' : 'active'
@@ -93,7 +93,7 @@ btnSubmit.addEventListener('click', async () => {
     guessInput.value = '';
 });
 
-// --- Helper Functions ---
+// --- Game Functions ---
 
 function startUI(id) {
     document.getElementById('display-id').innerText = id;
@@ -107,10 +107,8 @@ function listenForChanges() {
         const data = snapshot.val();
         if (!data) return;
 
-        // Turn Logic
-        turnIndicator.innerText = data.turn === playerRole ? "🟢 YOUR TURN!" : "⏳ Opponent's Turn...";
+        turnIndicator.innerText = data.turn === playerRole ? "🟢 YOUR TURN" : "⏳ OPPONENT'S TURN";
         
-        // Update Logs
         guessLog.innerHTML = '';
         if (data.guesses) {
             Object.values(data.guesses).reverse().forEach(g => {
@@ -122,7 +120,7 @@ function listenForChanges() {
         }
 
         if (data.status === 'won') {
-            turnIndicator.innerText = "🎉 GAME OVER - CODE BROKEN!";
+            turnIndicator.innerText = "🎉 CODE BROKEN!";
             btnSubmit.disabled = true;
         }
     });
