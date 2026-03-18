@@ -3,34 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Code Breaker Real-Time</title>
+    <title>Code Breaker 🔐</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="game-container">
         <h1>Code Breaker 🔐</h1>
+        
         <div id="status-board">
-            <p id="game-id">Game ID: <span id="display-id">---</span></p>
-            <p id="turn-indicator">Waiting for players...</p>
+            <p id="game-id-display">Game ID: <span id="display-id">---</span></p>
+            <p id="turn-indicator">Ready to play?</p>
         </div>
 
         <div id="setup-section">
-            <button id="create-game">Create New Game</button>
-            <input type="text" id="join-id" placeholder="Enter Game ID">
-            <button id="join-game">Join Game</button>
+            <button id="btn-create">Create New Game</button>
+            <div style="margin: 20px 0;">-- OR --</div>
+            <input type="text" id="join-id-input" placeholder="Enter Game ID">
+            <button id="btn-join">Join Game</button>
         </div>
 
         <div id="play-area" class="hidden">
             <div id="guess-log"></div>
             <div class="input-group">
-                <input type="number" id="player-guess" placeholder="0000" maxlength="4">
-                <button id="submit-guess">Guess</button>
+                <input type="number" id="player-guess" placeholder="4-digit code" maxlength="4">
+                <button id="btn-submit-guess">Submit Guess</button>
             </div>
         </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
